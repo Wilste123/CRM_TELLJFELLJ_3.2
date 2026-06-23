@@ -1,0 +1,7 @@
+# Dato skrevet: 23.06.2026
+# Forfatter: William Berg Steffenak - copyright
+streamlit
+supabase
+pandas
+reportlab
+openpyxl
