@@ -506,7 +506,7 @@ elif area == "Kunder":
 elif area == "Salg":
     tabs = st.tabs(["Leads", "Kalkyle", "Tilbud"])
 
-    with tabsleft, right = st.columns([1.05, 0.95])
+left, right = st.columns([1.05, 0.95])
 
         with left:
             search = st.text_input("Søk i leads")
