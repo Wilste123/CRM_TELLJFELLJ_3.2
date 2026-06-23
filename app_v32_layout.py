@@ -508,7 +508,7 @@ elif area == "Salg":
 
 left, right = st.columns([1.05, 0.95])
 
-       left:
+            left:
             search = st.text_input("Søk i leads")
             status_filter = st.selectbox("Status", ["Alle", "Ny", "Kontaktet", "Tilbud sendt", "Vunnet", "Tapt"])
             view = filter_df(leads_df, global_search, ["description", "source", "status", "note"])
