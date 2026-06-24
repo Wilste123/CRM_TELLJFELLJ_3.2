@@ -1,5 +1,3 @@
-# documents_module.py
-
 from __future__ import annotations
 
 import re
@@ -21,9 +19,6 @@ MAX_FILE_SIZE_MB = 25
 
 
 def _safe_filename(filename: str) -> str:
-    """
-    Rydder filnavn for trygg lagring i Storage.
-    """
     filename = filename.strip().replace(" ", "_")
     filename = re.sub(r"[^A-Za-z0-9._-]", "", filename)
     return filename or "fil"
@@ -58,7 +53,8 @@ def _category_folder(category: str) -> str:
     )
 
 
-def _signed_url(supabase, storage_path: str, expires_in: int = 3600) -> Optionaltry:
+def _signed_url(supabase, storage_path: str, expires_in: int = 3600) -> Optional[str]:
+    try:
         res = supabase.storage.from_(BUCKET_NAME).create_signed_url(storage_path, expires_in)
         if isinstance(res, dict):
             return res.get("signedURL") or res.get("signed_url")
@@ -68,14 +64,9 @@ def _signed_url(supabase, storage_path: str, expires_in: int = 3600) -> Optional
 
 
 def _delete_document(supabase, doc_id: str, storage_path: str) -> tuple[bool, str]:
-    """
-    Sletter både fil i Storage og rad i documents-tabellen.
-    """
     try:
-        # Forsøk å slette filen først
         supabase.storage.from_(BUCKET_NAME).remove([storage_path])
     except Exception:
-        # Fortsett selv om filen ikke finnes i Storage
         pass
 
     try:
@@ -91,18 +82,6 @@ def render_documents_module(
     customer_name: Optional[str] = None,
     current_user_id: Optional[str] = None,
 ):
-    """
-    Komplett dokumentmodul for én kunde.
-
-    Forutsetter:
-    - Tabell: public.documents
-    - Bucket: crm-files (privat bucket)
-    - Kolonner i documents:
-        id, customer_id, project_id, file_name, file_type, file_size,
-        category, storage_path, uploaded_at, created_by,
-        author_name, copyright_line
-    """
-
     st.subheader("📁 Dokumenter")
 
     if not customer_id:
@@ -206,7 +185,6 @@ def render_documents_module(
 
     st.markdown("---")
 
-    # Hent dokumenter
     try:
         res = (
             supabase.table("documents")
@@ -220,7 +198,6 @@ def render_documents_module(
         st.error(f"Kunne ikke hente dokumenter: {e}")
         return
 
-    # Filter
     categories = ["Alle"] + sorted({doc.get("category", "Annet") for doc in docs})
     f1, f2 = st.columns([1, 2])
 
