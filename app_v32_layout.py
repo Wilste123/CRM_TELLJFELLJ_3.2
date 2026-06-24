@@ -624,7 +624,7 @@ elif area == "Salg":
 
 left, right = st.columns([1.05, 0.95])
 
-    with left:
+with left:
             search = st.text_input("Søk i leads")
             status_filter = st.selectbox("Status", ["Alle", "Ny", "Kontaktet", "Tilbud sendt", "Vunnet", "Tapt"])
             view = filter_df(leads_df, global_search, ["description", "source", "status", "note"])
@@ -633,7 +633,7 @@ left, right = st.columns([1.05, 0.95])
                 view = view[view["status"] == status_filter]
             st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True) if not view.empty else st.info("Ingen leads.")
 
-    with right:
+with right:
             customers_opts = {f"{row['name']} • {short_id(row['id'])}": row["id"] for _, row in customers_df.iterrows()} if not customers_df.empty else {}
             with st.form("new_lead_form", clear_on_submit=True):
                 customer_label = st.selectbox("Kunde *", list(customers_opts.keys()) if customers_opts else [])
