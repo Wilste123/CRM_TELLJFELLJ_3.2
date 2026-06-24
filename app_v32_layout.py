@@ -285,48 +285,44 @@ def fetch_all_data(user_id: str):
 # LOGIN-SKJERM
 # =========================================================
 if DEV_MODE:
-    if DEV    ensure_dev_login()
-else:
-    if not current_user():
-        st.markdown(
-            """
-            <div class="hero">
-                <h1>📋 Lokal CRM</h1>
-                <p>Logg inn med Supabase Auth for å få tilgang til dine egne data.</p>
-            </div>
-            """,
-            unsafe_allow_html=True,
+    ensure_dev_autologin()
+
+if not current_user():
+    st.markdown(
+        """
+        <div class="hero">
+            <h1>📋 Lokal CRM</h1>
+            <p>Logg inn med Supabase Auth for å få tilgang til dine egne data.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    left, right = st.columns([0.8, 1.2])
+
+    with left:
+        st.markdown("### Innlogging")
+        with st.form("login_form"):
+            email = st.text_input("E-post")
+            password = st.text_input("Passord", type="password")
+            submitted = st.form_submit_button("Logg inn")
+            if submitted:
+                try:
+                    login(email, password)
+                    st.success("Innlogging ok.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Innlogging feilet: {e}")
+
+    with right:
+        st.markdown("### Viktig")
+        st.write(
+            "- Appen bruker Supabase Auth + RLS.\n"
+            "- Brukeren ser kun sine egne rader.\n"
+            "- Nye rader lagres med brukerens `user_id`."
         )
 
-        left, right = st.columns([0.8, 1.2])
-
-        with left:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
-            st.markdown("### Innlogging")
-            with st.form("login_form"):
-                email = st.text_input("E-post")
-                password = st.text_input("Passord", type="password")
-                submitted = st.form_submit_button("Logg inn")
-                if submitted:
-                    try:
-                        login(email, password)
-                        st.success("Innlogging ok.")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"Innlogging feilet: {e}")
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        with right:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
-            st.markdown("### Viktig")
-            st.write(
-                "- Appen bruker Supabase Auth + RLS.\n"
-                "- Brukeren ser kun sine egne rader.\n"
-                "- Nye rader lagres med brukerens `user_id`."
-            )
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        st.stop()
+    st.stop()
 
 # =========================================================
 # APP / DATA
