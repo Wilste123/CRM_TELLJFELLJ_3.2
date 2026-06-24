@@ -466,7 +466,7 @@ if area == "Dashboard":
             st.dataframe(display_df(equip_view[cols], show_internal_ids), use_container_width=True, hide_index=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    render_documents_module(
+render_documents_module(
     supabase=supabase,
     customer_id=customer_id,          # eksisterende kunde-ID i appen din
     customer_name=customer_name,      # valgfritt
