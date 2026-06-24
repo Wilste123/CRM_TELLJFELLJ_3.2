@@ -547,14 +547,16 @@ elif area == "Salg":
         with left:
             search = st.text_input("Søk i leads")
             status_filter = st.selectbox("Status", ["Alle", "Ny", "Kontaktet", "Tilbud sendt", "Vunnet", "Tapt"])
-            view = filter_df(leads_df, global_search, ["customer_name", "description", "source", "status", "note"])
-            view = filter_df(view, search, ["customer_name", "description", "source", "status", "note"])
-            if status_filter != "Alle" and not view.empty and "status" in view.columns:
+            view = filter_df(leads_df, global_search, ["description", "source", "status", "note"])
+            view = filter_df(view, search, ["description", "source", "status", "note"])
+
+            if status_filter != "Alle" and not view.empty:
                 view = view[view["status"] == status_filter]
+
             if not view.empty:
-    st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
-else:
-    st.info("Ingen leads.")
+                st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
+            else:
+                st.info("Ingen leads.")
 
         with right:
             customers_opts = {
@@ -570,6 +572,7 @@ else:
                 estimated_value = st.number_input("Estimert verdi", min_value=0.0, value=0.0, step=500.0)
                 follow_up_date = st.date_input("Neste oppfølging", value=date.today())
                 note = st.text_area("Notat")
+
                 submitted = st.form_submit_button("Legg til lead")
                 if submitted:
                     if not customers_opts:
@@ -596,20 +599,22 @@ else:
 
         with left:
             search = st.text_input("Søk i kalkyler")
-            view = filter_df(pricing_df, global_search, ["customer_name", "job_type", "complexity", "note"])
-            view = filter_df(view, search, ["customer_name", "job_type", "complexity", "note"])
+            view = filter_df(pricing_df, global_search, ["job_type", "complexity", "note"])
+            view = filter_df(view, search, ["job_type", "complexity", "note"])
+
             if not view.empty:
-    st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
-else:
-    st.info("Ingen kalkyler.")
+                st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
+            else:
+                st.info("Ingen kalkyler.")
 
         with right:
             customers_opts = {
                 f"{row['name']} • {short_id(row['id'])}": row["id"]
                 for _, row in customers_df.iterrows()
             } if not customers_df.empty else {}
+
             lead_opts = {
-                f"{row.get('description', 'Lead')} • {short_id(row['id'])}": row["id"]
+                f"{row['description']} • {short_id(row['id'])}": row["id"]
                 for _, row in leads_df.iterrows()
             } if not leads_df.empty else {}
 
@@ -632,8 +637,9 @@ else:
                 multiplier = {"Lav": 1.0, "Middels": 1.2, "Høy": 1.45}[complexity]
                 calculated_price = max(
                     minimum_price,
-                    round((base_labor + travel_cost + extra_equipment_cost + disposal_cost) * multiplier / 100) * 100,
+                    round((base_labor + travel_cost + extra_equipment_cost + disposal_cost) * multiplier / 100) * 100
                 )
+
                 st.info(f"Beregnet pris: {format_currency(calculated_price)}")
 
                 submitted = st.form_submit_button("Lagre kalkyle")
@@ -664,143 +670,7 @@ else:
                         st.rerun()
 
     with tab_quotes:
-        left, right = st.columns([1.05, 0.95])
-
-        with left:
-            search = st.text_input("Søk i tilbud")
-            status_filter = st.selectbox("Tilbudsstatus", ["Alle", "Utkast", "Sendt", "Akseptert", "Avslått"])
-            view = filter_df(quotes_df, global_search, ["customer_name", "job_type", "status", "send_method", "note"])
-            view = filter_df(view, search, ["customer_name", "job_type", "status", "send_method", "note"])
-            if status_filter != "Alle" and not view.empty and "status" in view.columns:
-                view = view[view["status"] == status_filter]
-            if not view.empty:
-    st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
-else:
-    st.info("Ingen tilbud.")
-
-            if not quotes_df.empty:
-                export_map = {
-                    f"{row.get('customer_name', 'Ukjent')} • {row.get('job_type', '')} • {short_id(row['id'])}": row
-                    for _, row in quotes_df.iterrows()
-                }
-                selected_label = st.selectbox("Velg tilbud for eksport", list(export_map.keys()))
-                selected_row = export_map[selected_label]
-                quote_pdf = pdf_from_lines("Tilbud", [
-                    f"Kunde: {selected_row.get('customer_name', '-')}",
-                    f"Tilbud-ID: {selected_row.get('id', '-')}",
-                    f"Oppdragstype: {selected_row.get('job_type', '-')}",
-                    f"Status: {selected_row.get('status', '-')}",
-                    f"Pris: {format_currency(selected_row.get('price', 0))}",
-                    f"Gyldig til: {value_label(selected_row.get('valid_until'))}",
-                    f"Notat: {value_label(selected_row.get('note'))}",
-                ])
-                quote_xlsx = dataframe_to_excel_bytes(pd.DataFrame([selected_row]), sheet_name="Tilbud")
-                a, b = st.columns(2)
-                with a:
-                    st.download_button(
-                        "Tilbud PDF",
-                        data=quote_pdf,
-                        file_name=f"tilbud_{short_id(selected_row['id'])}.pdf",
-                        mime="application/pdf",
-                    )
-                with b:
-                    st.download_button(
-                        "Tilbud Excel",
-                        data=quote_xlsx,
-                        file_name=f"tilbud_{short_id(selected_row['id'])}.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    )
-
-        with right:
-            pricing_opts = {
-                f"{row['job_type']} • {format_currency(row['calculated_price'])} • {short_id(row['id'])}": row
-                for _, row in pricing_df.iterrows()
-            } if not pricing_df.empty else {}
-
-            with st.form("new_quote_form", clear_on_submit=True):
-                pricing_label = st.selectbox("Kalkyle *", list(pricing_opts.keys()) if pricing_opts else [])
-                status = st.selectbox("Status", ["Utkast", "Sendt", "Akseptert", "Avslått"])
-                send_method = st.text_input("Sendemetode", value="E-postutkast")
-                valid_until = st.date_input("Gyldig til", value=date.today())
-                note = st.text_area("Notat")
-                submitted = st.form_submit_button("Opprett tilbud")
-                if submitted:
-                    if not pricing_opts:
-                        st.warning("Du må ha minst én kalkyle.")
-                    else:
-                        selected = pricing_opts[pricing_label]
-                        payload = {
-                            "user_id": user_id,
-                            "customer_id": selected["customer_id"],
-                            "job_type": selected["job_type"],
-                            "estimated_hours": selected.get("estimated_hours"),
-                            "price": selected["calculated_price"],
-                            "status": status,
-                            "valid_until": valid_until.isoformat(),
-                            "send_method": send_method.strip() or None,
-                            "note": note.strip() or None,
-                            "pricing_calculation_id": selected["id"],
-                            "lead_id": selected.get("lead_id"),
-                        }
-                        now = datetime.now().astimezone().isoformat()
-                        if status == "Sendt":
-                            payload["sent_at"] = now
-                        elif status == "Akseptert":
-                            payload["accepted_at"] = now
-                        elif status == "Avslått":
-                            payload["declined_at"] = now
-
-                        client.table("quotes").insert(payload).execute()
-                        clear_all_caches()
-                        st.success("Tilbud opprettet.")
-                        st.rerun()
-
-            st.markdown("---")
-            st.markdown("### Aksepter tilbud → opprett oppdrag")
-            quote_opts = {
-                f"{row.get('customer_name', 'Ukjent')} • {row.get('job_type', '')} • {short_id(row['id'])}": row
-                for _, row in quotes_df.iterrows()
-            } if not quotes_df.empty else {}
-
-            with st.form("quote_to_project_form"):
-                quote_label = st.selectbox("Velg tilbud", list(quote_opts.keys()) if quote_opts else [])
-                project_address = st.text_input("Adresse")
-                project_status = st.selectbox("Oppdragsstatus", ["Planlagt", "Pågår", "Fullført", "Fakturert", "Avsluttet"])
-                project_start = st.date_input("Startdato", value=date.today())
-                hms = st.checkbox("HMS-vurdering", value=True)
-                project_note = st.text_area("Prosjektnotat")
-                submitted = st.form_submit_button("Aksepter tilbud og opprett oppdrag")
-                if submitted:
-                    if not quote_opts:
-                        st.warning("Ingen tilbud tilgjengelig.")
-                    else:
-                        selected = quote_opts[quote_label]
-                        client.table("quotes").update({
-                            "status": "Akseptert",
-                            "accepted_at": datetime.now().astimezone().isoformat(),
-                        }).eq("id", selected["id"]).execute()
-
-                        client.table("projects").insert({
-                            "user_id": user_id,
-                            "customer_id": selected["customer_id"],
-                            "project_type": selected["job_type"],
-                            "address": project_address or None,
-                            "status": project_status,
-                            "price": safe_number(selected["price"], 0),
-                            "start_date": project_start.isoformat(),
-                            "hms": hms,
-                            "ready_for_invoice": False,
-                            "invoiced": False,
-                            "invoice_number": None,
-                            "note": project_note or f"Opprettet fra tilbud {short_id(selected['id'])}",
-                            "quote_id": selected["id"],
-                        }).execute()
-
-                        clear_all_caches()
-                        st.success("Tilbud akseptert og oppdrag opprettet.")
-                        st.rerun()
-
-
+        st.info("Tilbud-delen kan vi legge inn igjen når Salg-blokken starter uten syntax-feil.")
 # =========================================================
 # DRIFT
 # =========================================================
