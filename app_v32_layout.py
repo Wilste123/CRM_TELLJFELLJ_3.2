@@ -663,8 +663,8 @@ if area == "Kunder":
                                         or (signed.get("data") or {}).get("signed_url")
                                         or (signed.get("data") or {}).get("signedUrl")
                                         )
-                            elif hasattr(signed, "data"):
-                                data_obj = signed.data
+                                elif hasattr(signed, "data"):
+                                    data_obj = signed.data
                                 if isinstance(data_obj, dict):
                                     signed_url = (
                                         data_obj.get("signedURL")
