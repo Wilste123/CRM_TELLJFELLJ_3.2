@@ -284,7 +284,8 @@ def fetch_all_data(user_id: str):
 # =========================================================
 # LOGIN-SKJERM
 # =========================================================
-if DEV_MODE:if DEV    ensure_dev_login()
+if DEV_MODE:
+    if DEV    ensure_dev_login()
 else:
     if not current_user():
         st.markdown(
