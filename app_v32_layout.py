@@ -679,10 +679,10 @@ if area == "Kunder":
                                     st.caption(f"Path: {doc.get('storage_path', '-')}")
                                     st.code(str(signed), language="python")
 
-                                except Exception as e:
-                                    st.caption("Feil lenke")
-                                    st.caption(f"Path: {doc.get('storage_path', '-')}")
-                                    st.code(str(e), language="python")
+                            except Exception as e:
+                                st.caption("Feil lenke")
+                                st.caption(f"Path: {doc.get('storage_path', '-')}")
+                                st.code(str(e), language="python")
         
 
                         with col3:
