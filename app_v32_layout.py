@@ -750,14 +750,14 @@ if area == "Drift":
             view = filter_df(project_logs_df, global_search, ["project_label", "task", "performed_by", "deviation", "next_step", "note"])
             view = filter_df(view, search, ["project_label", "task", "performed_by", "deviation", "next_step", "note"])
             if not view.empty:
-    st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
-else:
-    st.info("Ingen loggposter.")
-            st.markdown("### Utstyr koblet til loggposter")
+                st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
+            else:
+                st.info("Ingen loggposter.")
+                st.markdown("### Utstyr koblet til loggposter")
             if not project_log_equipment_df.empty:
-    st.dataframe(display_df(project_log_equipment_df, show_internal_ids), use_container_width=True, hide_index=True)
-else:
-    st.caption("Ingen koblinger ennå.")
+                st.dataframe(display_df(project_log_equipment_df, show_internal_ids), use_container_width=True, hide_index=True)
+            else:
+                st.caption("Ingen koblinger ennå.")
 
         with right:
             project_opts = {
@@ -835,14 +835,14 @@ else:
             view = filter_df(equipment_df, global_search, ["name", "category", "status", "note", "maintenance_status"])
             view = filter_df(view, search, ["name", "category", "status", "note", "maintenance_status"])
             if not view.empty:
-    st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
-else:
-    st.info("Ingen utstyr.")
-            st.markdown("### Servicehistorikk")
+                st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
+            else:
+                st.info("Ingen utstyr.")
+                st.markdown("### Servicehistorikk")
             if not equipment_service_logs_df.empty:
-    st.dataframe(display_df(equipment_service_logs_df, show_internal_ids), use_container_width=True, hide_index=True)
-else:
-    st.caption("Ingen servicehistorikk.")
+                st.dataframe(display_df(equipment_service_logs_df, show_internal_ids), use_container_width=True, hide_index=True)
+            else:
+                st.caption("Ingen servicehistorikk.")
 
         with right:
             with st.form("new_equipment_form", clear_on_submit=True):
