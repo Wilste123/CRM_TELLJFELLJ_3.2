@@ -690,7 +690,7 @@ if area == "Drift":
             if not view.empty:
                 st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
             else:
-            st.info("Ingen oppdrag.")
+                st.info("Ingen oppdrag.")
 
         with right:
             project_opts = {
