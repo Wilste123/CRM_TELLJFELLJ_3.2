@@ -5,6 +5,19 @@
 # Beskrivelse: Oppryddet og kjørbar CRM-app med Supabase Auth + RLS
 # =========================================
 
+DEV_MODE = True
+
+if DEV_MODE:
+    user = {"id": "dev-user", "email": "dev@local"}
+    user_id = user["id"]
+else:
+    if not current_user():
+        ...
+        st.stop()
+
+    user = current_user()
+    user_id = user["id"]
+
 from datetime import date, datetime
 from io import BytesIO
 
