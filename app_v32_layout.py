@@ -645,8 +645,6 @@ if area == "Kunder":
                         with col1:
                             st.write(f"📄 **{doc.get('file_name', '-')}**")
                             st.caption(f"Kategori: {doc.get('category', '-')}")
-                            st.caption(f"Forfatter: {doc.get('author_name', '-')}")
-                            st.caption(doc.get("copyright_line", "-"))
 
                         with col2:
                             try:
