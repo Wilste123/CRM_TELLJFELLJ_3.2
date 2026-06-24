@@ -646,26 +646,26 @@ if area == "Kunder":
                             st.write(f"📄 **{doc.get('file_name', '-')}**")
                             st.caption(f"Kategori: {doc.get('category', '-')}")
 
-                       with col2:
-                        try:
-                            file_bytes = client.storage.from_(DOC_BUCKET).download(doc["storage_path"])
-                    
-                            if file_bytes:
-                                st.download_button(
-                                    "Last ned",
-                                    data=file_bytes,
-                                    file_name=doc.get("file_name", "dokument"),
-                                    mime=doc.get("file_type") or "application/octet-stream",
-                                    key=f"download_{doc['id']}",
-                                )
-                            else:
+                        with col2:
+                            try:
+                                file_bytes = client.storage.from_(DOC_BUCKET).download(doc["storage_path"])
+                        
+                                if file_bytes:
+                                    st.download_button(
+                                        "Last ned",
+                                        data=file_bytes,
+                                        file_name=doc.get("file_name", "dokument"),
+                                        mime=doc.get("file_type") or "application/octet-stream",
+                                        key=f"download_{doc['id']}",
+                                    )
+                                else:
+                                    st.caption("Mangler fil")
+                                    st.caption(f"Path: {doc.get('storage_path', '-')}")
+                            except Exception as e:
                                 st.caption("Mangler fil")
                                 st.caption(f"Path: {doc.get('storage_path', '-')}")
-                        except Exception as e:
-                            st.caption("Mangler fil")
-                            st.caption(f"Path: {doc.get('storage_path', '-')}")
-                            st.code(str(e), language="python")
-    
+                                st.code(str(e), language="python")
+        
                         with col3:
                             if st.button("Slett", key=f"delete_doc_{doc['id']}"):
                                 try:
