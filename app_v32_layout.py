@@ -656,14 +656,14 @@ if area == "Kunder":
                                 signed_url = None
 
         # Vanligst: dict med signedURL / signed_url
-                        if isinstance(signed, dict):
-                            signed_url = (
-                            signed.get("signedURL")
-                            or signed.get("signed_url")
-                            or (signed.get("data") or {}).get("signedURL")
-                            or (signed.get("data") or {}).get("signed_url")
-                            or (signed.get("data") or {}).get("signedUrl")
-                            )
+                            if isinstance(signed, dict):
+                                signed_url = (
+                                signed.get("signedURL")
+                                or signed.get("signed_url")
+                                or (signed.get("data") or {}).get("signedURL")
+                                or (signed.get("data") or {}).get("signed_url")
+                                or (signed.get("data") or {}).get("signedUrl")
+                                )
 
         # Hvis klienten returnerer objekt med .data
                             elif hasattr(signed, "data"):
