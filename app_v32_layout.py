@@ -666,13 +666,13 @@ with right:
 
 left, right = st.columns([1.05, 0.95])
 
-    with left:
+with left:
             search = st.text_input("Søk i kalkyler")
             view = filter_df(pricing_df, global_search, ["job_type", "complexity", "note"])
             view = filter_df(view, search, ["job_type", "complexity", "note"])
             st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True) if not view.empty else st.info("Ingen kalkyler.")
 
-    with right:
+with right:
             customers_opts = {f"{row['name']} • {short_id(row['id'])}": row["id"] for _, row in customers_df.iterrows()} if not customers_df.empty else {}
             lead_opts = {f"{row['description']} • {short_id(row['id'])}": row["id"] for _, row in leads_df.iterrows()} if not leads_df.empty else {}
 
