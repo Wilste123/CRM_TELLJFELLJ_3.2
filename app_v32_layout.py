@@ -473,18 +473,38 @@ if area == "Dashboard":
 elif area == "Kunder":
     left, right = st.columns([1.05, 0.95])
 
-    with left:
-        search = st.text_input("Søk i kunder")
-        view = filter_df(customers_df, global_search, ["name", "phone", "email", "address", "customer_type", "note"])
-        view = filter_df(view, search, ["name", "phone", "email", "address", "customer_type", "note"])
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown('<p class="section-title">Kundeliste</p>', unsafe_allow_html=True)
-        if view.empty:
-            st.info("Ingen kunder.")
-        else:
-            st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+with left:
+    search = st.text_input("Søk i kunder")
+    view = filter_df(customers_df, global_search, ["name", "phone", "email", "address", "customer_type", "note"])
+    view = filter_df(view, search, ["name", "phone", "email", "address", "customer_type", "note"])
 
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<p class="section-title">Kundeliste</p>', unsafe_allow_html=True)
+
+    if view.empty:
+        st.info("Ingen kunder.")
+    else:
+        cols = st.columns(2)
+        for idx, (_, row) in enumerate(view.iterrows()):
+            with cols[idx % 2]:
+                st.markdown(
+                    f"""
+                    <div class="card">
+                        <p class="section-title" style="margin-bottom:6px;">{row.get('name', '-')}</p>
+                        <div><strong>Type:</strong> {value_label(row.get('customer_type'))}</div>
+                        <div><strong>Telefon:</strong> {value_label(row.get('phone'))}</div>
+                        <div><strong>E-post:</strong> {value_label(row.get('email'))}</div>
+                        <div><strong>Adresse:</strong> {value_label(row.get('address'))}</div>
+                        <div><strong>Notat:</strong> {value_label(row.get('note'))}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+        with st.expander("Vis kundetabell"):
+            st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
     with right:
         st.markdown('<div class="card">', unsafe_allow_html=True)
         st.markdown('<p class="section-title">Ny kunde</p>', unsafe_allow_html=True)
@@ -531,7 +551,10 @@ elif area == "Salg":
             view = filter_df(view, search, ["customer_name", "description", "source", "status", "note"])
             if status_filter != "Alle" and not view.empty and "status" in view.columns:
                 view = view[view["status"] == status_filter]
-            st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True) if not view.empty else st.info("Ingen leads.")
+            if not view.empty:
+    st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
+else:
+    st.info("Ingen leads.")
 
         with right:
             customers_opts = {
@@ -575,7 +598,10 @@ elif area == "Salg":
             search = st.text_input("Søk i kalkyler")
             view = filter_df(pricing_df, global_search, ["customer_name", "job_type", "complexity", "note"])
             view = filter_df(view, search, ["customer_name", "job_type", "complexity", "note"])
-            st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True) if not view.empty else st.info("Ingen kalkyler.")
+            if not view.empty:
+    st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
+else:
+    st.info("Ingen kalkyler.")
 
         with right:
             customers_opts = {
@@ -647,7 +673,10 @@ elif area == "Salg":
             view = filter_df(view, search, ["customer_name", "job_type", "status", "send_method", "note"])
             if status_filter != "Alle" and not view.empty and "status" in view.columns:
                 view = view[view["status"] == status_filter]
-            st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True) if not view.empty else st.info("Ingen tilbud.")
+            if not view.empty:
+    st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
+else:
+    st.info("Ingen tilbud.")
 
             if not quotes_df.empty:
                 export_map = {
@@ -788,7 +817,10 @@ elif area == "Drift":
             view = filter_df(view, search, ["customer_name", "project_type", "address", "status", "note"])
             if status_filter != "Alle" and not view.empty and "status" in view.columns:
                 view = view[view["status"] == status_filter]
-            st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True) if not view.empty else st.info("Ingen oppdrag.")
+            if not view.empty:
+    st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
+else:
+    st.info("Ingen oppdrag.")
 
         with right:
             project_opts = {
@@ -847,9 +879,15 @@ elif area == "Drift":
             search = st.text_input("Søk i oppdragslogg")
             view = filter_df(project_logs_df, global_search, ["project_label", "task", "performed_by", "deviation", "next_step", "note"])
             view = filter_df(view, search, ["project_label", "task", "performed_by", "deviation", "next_step", "note"])
-            st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True) if not view.empty else st.info("Ingen loggposter.")
+            if not view.empty:
+    st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
+else:
+    st.info("Ingen loggposter.")
             st.markdown("### Utstyr koblet til loggposter")
-            st.dataframe(display_df(project_log_equipment_df, show_internal_ids), use_container_width=True, hide_index=True) if not project_log_equipment_df.empty else st.caption("Ingen koblinger ennå.")
+            if not project_log_equipment_df.empty:
+    st.dataframe(display_df(project_log_equipment_df, show_internal_ids), use_container_width=True, hide_index=True)
+else:
+    st.caption("Ingen koblinger ennå.")
 
         with right:
             project_opts = {
@@ -926,9 +964,15 @@ elif area == "Drift":
             search = st.text_input("Søk i utstyr")
             view = filter_df(equipment_df, global_search, ["name", "category", "status", "note", "maintenance_status"])
             view = filter_df(view, search, ["name", "category", "status", "note", "maintenance_status"])
-            st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True) if not view.empty else st.info("Ingen utstyr.")
+            if not view.empty:
+    st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
+else:
+    st.info("Ingen utstyr.")
             st.markdown("### Servicehistorikk")
-            st.dataframe(display_df(equipment_service_logs_df, show_internal_ids), use_container_width=True, hide_index=True) if not equipment_service_logs_df.empty else st.caption("Ingen servicehistorikk.")
+            if not equipment_service_logs_df.empty:
+    st.dataframe(display_df(equipment_service_logs_df, show_internal_ids), use_container_width=True, hide_index=True)
+else:
+    st.caption("Ingen servicehistorikk.")
 
         with right:
             with st.form("new_equipment_form", clear_on_submit=True):
@@ -1064,7 +1108,10 @@ elif area == "Kursing":
         search = st.text_input("Søk i kurs")
         view = filter_df(courses_df, global_search, ["title", "course_type", "provider", "documentation", "note"])
         view = filter_df(view, search, ["title", "course_type", "provider", "documentation", "note"])
-        st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True) if not view.empty else st.info("Ingen kurs registrert.")
+        if not view.empty:
+    st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
+else:
+    st.info("Ingen kurs registrert.")
 
     with right:
         with st.form("new_course_form", clear_on_submit=True):
