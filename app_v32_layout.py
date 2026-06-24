@@ -470,7 +470,7 @@ if area == "Dashboard":
 # =========================================================
 # KUNDER
 # =========================================================
-elif area == "Kunder":
+if area == "Kunder":
     left, right = st.columns([1.05, 0.95])
 
 with left:
@@ -538,7 +538,7 @@ with left:
 # =========================================================
 # SALG
 # =========================================================
-elif area == "Salg":
+if area == "Salg":
     tab_leads, tab_pricing, tab_quotes = st.tabs(["Leads", "Kalkyle", "Tilbud"])
 
     with tab_leads:
@@ -674,7 +674,7 @@ elif area == "Salg":
 # =========================================================
 # DRIFT
 # =========================================================
-elif area == "Drift":
+if area == "Drift":
     tab_project_card, tab_project_logs, tab_equipment = st.tabs(["Oppdragskort", "Oppdragslogg", "Utstyr"])
 
     with tab_project_card:
@@ -907,7 +907,7 @@ else:
 # =========================================================
 # FAKTURERING
 # =========================================================
-elif area == "Fakturering":
+if area == "Fakturering":
     left, right = st.columns([1.05, 0.95])
 
     invoice_view = projects_df.copy()
@@ -971,7 +971,7 @@ elif area == "Fakturering":
 # =========================================================
 # KURSING
 # =========================================================
-elif area == "Kursing":
+if area == "Kursing":
     left, right = st.columns([1.05, 0.95])
 
     with left:
