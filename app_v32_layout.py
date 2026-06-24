@@ -664,7 +664,7 @@ with right:
                         st.success("Lead lagret.")
                         st.rerun()
 
-with tabsleft, right = st.columns([1.05, 0.95])
+left, right = st.columns([1.05, 0.95])
 
     with left:
             search = st.text_input("Søk i kalkyler")
