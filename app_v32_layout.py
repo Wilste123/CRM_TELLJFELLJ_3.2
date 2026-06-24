@@ -539,6 +539,7 @@ if area == "Kunder":
                     st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("---")
+        st.markdown("---")
     st.markdown("### 📁 Dokumenter")
 
     # Velg kunde for dokumentmodulen
@@ -682,7 +683,7 @@ st.markdown("---")
 
         except Exception as e:
             st.error(f"Kunne ikke hente dokumenter: {e}")
-``
+
 
 # =========================================================
 # SALG
