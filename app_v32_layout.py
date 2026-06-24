@@ -540,7 +540,7 @@ if area == "Kunder":
         st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("---")
         st.markdown("---")
-    st.markdown("### 📁 Dokumenter")
+        st.markdown("### 📁 Dokumenter")
 
     # Velg kunde for dokumentmodulen
     customer_options = {}
