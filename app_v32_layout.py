@@ -979,9 +979,9 @@ if area == "Kursing":
         view = filter_df(courses_df, global_search, ["title", "course_type", "provider", "documentation", "note"])
         view = filter_df(view, search, ["title", "course_type", "provider", "documentation", "note"])
         if not view.empty:
-    st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
-else:
-    st.info("Ingen kurs registrert.")
+            st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
+        else:
+            st.info("Ingen kurs registrert.")
 
     with right:
         with st.form("new_course_form", clear_on_submit=True):
