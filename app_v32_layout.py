@@ -5,7 +5,7 @@
 # Beskrivelse: Oppryddet og kjørbar CRM-app med Supabase Auth + RLS
 # =========================================
 
-DEV_MODE = True
+DEV_MODE = false
 
 if DEV_MODE:
     user = {"id": "dev-user", "email": "dev@local"}
