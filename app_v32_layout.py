@@ -647,19 +647,46 @@ if area == "Kunder":
                             st.caption(f"Kategori: {doc.get('category', '-')}")
 
                         with col2:
-                            try:
-                                signed = client.storage.from_(DOC_BUCKET).create_signed_url(
-                                    doc["storage_path"],
-                                    3600
-                                )
-                                signed_url = signed.get("signedURL") or signed.get("signed_url")
+    try:
+        signed = client.storage.from_(DOC_BUCKET).create_signed_url(
+            doc["storage_path"],
+            3600
+        )
 
-                                if signed_url:
-                                    st.link_button("Åpne", signed_url, key=f"open_{doc['id']}")
-                                else:
-                                    st.caption("Ingen lenke")
-                            except Exception:
-                                st.caption("Feil lenke")
+        signed_url = None
+
+        # Vanligst: dict med signedURL / signed_url
+        if isinstance(signed, dict):
+            signed_url = (
+                signed.get("signedURL")
+                or signed.get("signed_url")
+                or (signed.get("data") or {}).get("signedURL")
+                or (signed.get("data") or {}).get("signed_url")
+                or (signed.get("data") or {}).get("signedUrl")
+            )
+
+        # Hvis klienten returnerer objekt med .data
+        elif hasattr(signed, "data"):
+            data_obj = signed.data
+            if isinstance(data_obj, dict):
+                signed_url = (
+                    data_obj.get("signedURL")
+                    or data_obj.get("signed_url")
+                    or data_obj.get("signedUrl")
+                )
+
+        if signed_url:
+            st.link_button("Åpne", signed_url, key=f"open_{doc['id']}")
+        else:
+            st.caption("Ingen lenke")
+            st.caption(f"Path: {doc.get('storage_path', '-')}")
+            st.code(str(signed), language="python")
+
+    except Exception as e:
+        st.caption("Feil lenke")
+        st.caption(f"Path: {doc.get('storage_path', '-')}")
+        st.code(str(e), language="python")
+
 
                         with col3:
                             if st.button("Slett", key=f"delete_doc_{doc['id']}"):
