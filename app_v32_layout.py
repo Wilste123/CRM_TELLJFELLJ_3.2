@@ -15,6 +15,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 from supabase import Client, create_client
 from documents_module import render_documents_module
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # =========================================================
 # PAGE CONFIG
