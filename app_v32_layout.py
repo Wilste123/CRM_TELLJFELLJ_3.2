@@ -1,3 +1,119 @@
+# =========================================
+# Dato: 23.06.2026
+# Forfatter: William Berg Steffenak - copyright
+# Versjon: V3.3 Secure
+# =========================================
+
+import streamlit as st
+from supabase import create_client
+
+# =========================
+# CONFIG
+# =========================
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+st.set_page_config(page_title="CRM Secure", layout="wide")
+
+# =========================
+# LOGIN
+# =========================
+def login():
+    st.title("Login")
+
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Logg inn"):
+        res = supabase.auth.sign_in_with_password({
+            "email": email,
+            "password": password
+        })
+
+        if res.user:
+            st.session_state["user"] = res.user
+            st.session_state["access_token"] = res.session.access_token
+            st.success("Logget inn ✅")
+            st.rerun()
+        else:
+            st.error("Feil login")
+
+# =========================
+# USER SESSION
+# =========================
+if "user" not in st.session_state:
+    login()
+    st.stop()
+
+user = st.session_state["user"]
+user_id = user.id
+
+st.sidebar.write(f"Innlogget som: {user.email}")
+
+# =========================
+# HELPER
+# =========================
+def insert(table, payload):
+    payload["user_id"] = user_id
+    return supabase.table(table).insert(payload).execute()
+
+def select(table):
+    return supabase.table(table).select("*").execute().data
+
+# =========================
+# UI
+# =========================
+
+st.title("CRM (Secure)")
+
+tab1, tab2 = st.tabs(["Kunder", "Oppdrag"])
+
+# =========================
+# KUNDER
+# =========================
+with tab1:
+    st.subheader("Kunder")
+
+    name = st.text_input("Navn")
+    phone = st.text_input("Telefon")
+
+    if st.button("Lagre kunde"):
+        insert("customers", {
+            "name": name,
+            "phone": phone
+        })
+        st.success("Lagret")
+
+    data = select("customers")
+    st.dataframe(data)
+
+# =========================
+# PROSJEKTER
+# =========================
+with tab2:
+    st.subheader("Oppdrag")
+
+    project_name = st.text_input("Oppdrag")
+
+    if st.button("Lagre oppdrag"):
+        insert("projects", {
+            "project_type": project_name
+        })
+        st.success("Lagret")
+
+    data = select("projects")
+    st.dataframe(data)
+
+# =========================
+# LOGOUT
+# =========================
+if st.sidebar.button("Logg ut"):
+    supabase.auth.sign_out()
+    st.session_state.clear()
+    st.rerun()
+
 # Dato skrevet: 23.06.2026
 # Forfatter: William Berg Steffenak - copyright
 # Fil: app.py
