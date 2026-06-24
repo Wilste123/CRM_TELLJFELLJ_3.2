@@ -14,7 +14,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 from supabase import Client, create_client
-
+from documents_module import render_documents_module
 
 # =========================================================
 # PAGE CONFIG
@@ -466,7 +466,12 @@ if area == "Dashboard":
             st.dataframe(display_df(equip_view[cols], show_internal_ids), use_container_width=True, hide_index=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-
+    render_documents_module(
+    supabase=supabase,
+    customer_id=customer_id,          # eksisterende kunde-ID i appen din
+    customer_name=customer_name,      # valgfritt
+    current_user_id=user_id           # valgfritt
+)
 # =========================================================
 # KUNDER
 # =========================================================
