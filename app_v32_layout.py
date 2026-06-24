@@ -473,13 +473,13 @@ if area == "Dashboard":
 if area == "Kunder":
     left, right = st.columns([1.05, 0.95])
 
-with left:
-    search = st.text_input("Søk i kunder")
-    view = filter_df(customers_df, global_search, ["name", "phone", "email", "address", "customer_type", "note"])
-    view = filter_df(view, search, ["name", "phone", "email", "address", "customer_type", "note"])
+    with left:
+        search = st.text_input("Søk i kunder")
+        view = filter_df(customers_df, global_search, ["name", "phone", "email", "address", "customer_type", "note"])
+        view = filter_df(view, search, ["name", "phone", "email", "address", "customer_type", "note"])
 
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown('<p class="section-title">Kundeliste</p>', unsafe_allow_html=True)
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown('<p class="section-title">Kundeliste</p>', unsafe_allow_html=True)
 
     if view.empty:
         st.info("Ingen kunder.")
