@@ -688,9 +688,9 @@ if area == "Drift":
             if status_filter != "Alle" and not view.empty and "status" in view.columns:
                 view = view[view["status"] == status_filter]
             if not view.empty:
-    st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
-else:
-    st.info("Ingen oppdrag.")
+            st.dataframe(display_df(view, show_internal_ids), use_container_width=True, hide_index=True)
+                else:
+                st.info("Ingen oppdrag.")
 
         with right:
             project_opts = {
