@@ -672,18 +672,18 @@ if area == "Kunder":
                                         or data_obj.get("signedUrl")
                                     )
 
-                            if signed_url:
-                                st.link_button("Åpne", signed_url, key=f"open_{doc['id']}")
-                            else:
-                                st.caption("Ingen lenke")
-                                st.caption(f"Path: {doc.get('storage_path', '-')}")
-                                st.code(str(signed), language="python")
+                                if signed_url:
+                                    st.link_button("Åpne", signed_url, key=f"open_{doc['id']}")
+                                else:
+                                    st.caption("Ingen lenke")
+                                    st.caption(f"Path: {doc.get('storage_path', '-')}")
+                                    st.code(str(signed), language="python")
 
-                        except Exception as e:
-                            st.caption("Feil lenke")
-                            st.caption(f"Path: {doc.get('storage_path', '-')}")
-                            st.code(str(e), language="python")
-
+                                except Exception as e:
+                                    st.caption("Feil lenke")
+                                    st.caption(f"Path: {doc.get('storage_path', '-')}")
+                                    st.code(str(e), language="python")
+        
 
                         with col3:
                             if st.button("Slett", key=f"delete_doc_{doc['id']}"):
