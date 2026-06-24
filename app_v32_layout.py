@@ -14,7 +14,13 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 from supabase import Client, create_client
-from documents_module import render_documents_module
+
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_KEY = st.secrets.get("SUPABASE_PUBLISHABLE_KEY") or st.secrets.get("SUPABASE_KEY")
+
+AUTHOR_NAME = "William Berg Steffenak"
+COPYRIGHT_LINE = "William Berg Steffenak - copyright"
+DOC_BUCKET = "crm-files"
 
 # =========================================================
 # PAGE CONFIG
@@ -532,7 +538,151 @@ if area == "Kunder":
                     st.success("Kunde lagret.")
                     st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("---")
+    st.markdown("### 📁 Dokumenter")
 
+    # Velg kunde for dokumentmodulen
+    customer_options = {}
+    if not customers_df.empty and "id" in customers_df.columns:
+        customer_options = {
+            f"{row.get('name', 'Ukjent')} • {short_id(row['id'])}": row["id"]
+            for _, row in customers_df.iterrows()
+        }
+
+    if not customer_options:
+        st.info("Du må ha minst én kunde for å bruke dokumentmodulen.")
+    else:
+        selected_customer_label = st.selectbox(
+            "Velg kunde for dokumenter",
+            list(customer_options.keys()),
+            key="documents_customer_select"
+        )
+        customer_id = customer_options[selected_customer_label]
+
+        st.caption(f"Valgt kunde-ID: {customer_id}")
+
+        doc_category = st.selectbox(
+            "Kategori",
+            ["Kontrakt", "Tilbud", "Faktura", "Bilde", "Rapport", "Annet"],
+            key=f"doc_category_{customer_id}"
+        )
+
+        uploaded_doc = st.file_uploader(
+            "Last opp dokument",
+            type=["pdf", "doc", "docx", "xls", "xlsx", "png", "jpg", "jpeg", "webp", "txt", "csv"],
+            key=f"doc_upload_{customer_id}"
+        )
+
+        if st.button("Last opp dokument", key=f"doc_upload_btn_{customer_id}"):
+            if not uploaded_doc:
+                st.warning("Velg en fil først.")
+            else:
+                try:
+                    file_bytes = uploaded_doc.getvalue()
+                    file_name = uploaded_doc.name
+                    file_type = uploaded_doc.type or "application/octet-stream"
+                    file_size = len(file_bytes)
+
+                    safe_name = file_name.replace(" ", "_")
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    category_folder = (
+                        doc_category.lower()
+                        .replace(" ", "_")
+                        .replace("æ", "ae")
+                        .replace("ø", "o")
+                        .replace("å", "a")
+                    )
+                    storage_path = f"customers/{customer_id}/{category_folder}/{timestamp}_{safe_name}"
+
+                    # Last opp til Supabase Storage
+                    client.storage.from_(DOC_BUCKET).upload(
+                        storage_path,
+                        file_bytes,
+                        {"content-type": file_type}
+                    )
+
+                    # Lagre metadata i databasen
+                    payload = {
+                        "customer_id": customer_id,
+                        "file_name": file_name,
+                        "file_type": file_type,
+                        "file_size": file_size,
+                        "category": doc_category,
+                        "storage_path": storage_path,
+                        "created_by": user_id,
+                        "author_name": AUTHOR_NAME,
+                        "copyright_line": COPYRIGHT_LINE,
+                    }
+
+                    client.table("documents").insert(payload).execute()
+
+                    st.success("Dokument lastet opp ✅")
+                    clear_all_caches()
+                    st.rerun()
+
+                except Exception as e:
+                    st.error(f"Opplasting feilet: {e}")
+
+        st.markdown("#### Dokumentliste")
+
+        try:
+            docs_res = (
+                client.table("documents")
+                .select("*")
+                .eq("customer_id", customer_id)
+                .order("uploaded_at", desc=True)
+                .execute()
+            )
+
+            docs = docs_res.data if docs_res.data else []
+
+            if docs:
+                for doc in docs:
+                    col1, col2, col3 = st.columns([5, 1, 1])
+
+                    with col1:
+                        st.write(f"📄 **{doc.get('file_name', '-')}**")
+                        st.caption(f"Kategori: {doc.get('category', '-')}")
+                        st.caption(f"Forfatter: {doc.get('author_name', '-')}")
+                        st.caption(doc.get("copyright_line", "-"))
+
+                    with col2:
+                        try:
+                            signed = client.storage.from_(DOC_BUCKET).create_signed_url(
+                                doc["storage_path"],
+                                3600
+                            )
+                            signed_url = signed.get("signedURL") or signed.get("signed_url")
+
+                            if signed_url:
+                                st.link_button("Åpne", signed_url, key=f"open_{doc['id']}")
+                            else:
+                                st.caption("Ingen lenke")
+                        except Exception:
+                            st.caption("Feil lenke")
+
+                    with col3:
+                        if st.button("Slett", key=f"delete_doc_{doc['id']}"):
+                            try:
+                                try:
+                                    client.storage.from_(DOC_BUCKET).remove([doc["storage_path"]])
+                                except Exception:
+                                    pass
+
+                                client.table("documents").delete().eq("id", doc["id"]).execute()
+
+                                st.success("Dokument slettet ✅")
+                                clear_all_caches()
+                                st.rerun()
+
+                            except Exception as e:
+                                st.error(f"Sletting feilet: {e}")
+            else:
+                st.info("Ingen dokumenter registrert på denne kunden ennå.")
+
+        except Exception as e:
+            st.error(f"Kunne ikke hente dokumenter: {e}")
+``
 
 # =========================================================
 # SALG
