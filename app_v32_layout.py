@@ -20,6 +20,10 @@ from supabase import Client, create_client
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets.get("SUPABASE_PUBLISHABLE_KEY") or st.secrets.get("SUPABASE_KEY")
 
+DEV_MODE = bool(st.secrets.get("DEV_MODE", False))
+DEV_USER_ID = st.secrets.get("DEV_USER_ID", "")
+DEV_USER_EMAIL = st.secrets.get("DEV_USER_EMAIL", "dev@local")
+
 AUTHOR_NAME = "William Berg Steffenak"
 COPYRIGHT_LINE = "William Berg Steffenak - copyright"
 DOC_BUCKET = "crm-files"
@@ -110,6 +114,24 @@ def get_client_with_session() -> Client:
 
 def current_user():
     return st.session_state.get("auth_user")
+
+def ensure_dev_login():
+    """
+    Setter en fake innlogget bruker i session_state når DEV_MODE er aktiv.
+    Bruk ekte Supabase user_id for å treffe eksisterende RLS-data.
+    """
+    if DEV_MODE:
+        if not DEV_USER_ID:
+            st.error("DEV_MODE er aktiv, men DEV_USER_ID mangler i secrets.")
+            st.stop()
+
+        st.session_state["auth_user"] = {
+            "id": DEV_USER_ID,
+            "email": DEV_USER_EMAIL,
+        }
+
+        # Fjern eventuell gammel supabase_session hvis du vil kjøre helt uten vanlig login-session
+        st.session_state.pop("supabase_session", None)
 
 
 def login(email: str, password: str):
@@ -262,47 +284,48 @@ def fetch_all_data(user_id: str):
 # =========================================================
 # LOGIN-SKJERM
 # =========================================================
-if not current_user():
-    st.markdown(
-        """
-        <div class="hero">
-            <h1>Lokal CRM</h1>
-            <p>Logg inn med Supabase Auth for å få tilgang til dine egne data.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    left, right = st.columns([0.8, 1.2])
-
-    with left:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown('<p class="section-title">Innlogging</p>', unsafe_allow_html=True)
-        with st.form("login_form"):
-            email = st.text_input("E-post")
-            password = st.text_input("Passord", type="password")
-            submitted = st.form_submit_button("Logg inn")
-            if submitted:
-                try:
-                    login(email, password)
-                    st.success("Innlogging ok.")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Innlogging feilet: {e}")
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with right:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown('<p class="section-title">Viktig</p>', unsafe_allow_html=True)
-        st.write(
-            "- Appen bruker Supabase Auth + RLS.\n"
-            "- Brukeren ser kun sine egne rader.\n"
-            "- Nye rader lagres med brukerens `user_id`."
+if DEV_MODE:if DEV    ensure_dev_login()
+else:
+    if not current_user():
+        st.markdown(
+            """
+            <div class="hero">
+                <h1>📋 Lokal CRM</h1>
+                <p>Logg inn med Supabase Auth for å få tilgang til dine egne data.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
-        st.markdown("</div>", unsafe_allow_html=True)
 
-    st.stop()
+        left, right = st.columns([0.8, 1.2])
 
+        with left:
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.markdown("### Innlogging")
+            with st.form("login_form"):
+                email = st.text_input("E-post")
+                password = st.text_input("Passord", type="password")
+                submitted = st.form_submit_button("Logg inn")
+                if submitted:
+                    try:
+                        login(email, password)
+                        st.success("Innlogging ok.")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Innlogging feilet: {e}")
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with right:
+            st.markdown('<div class="card">', unsafe_allow_html=True)
+            st.markdown("### Viktig")
+            st.write(
+                "- Appen bruker Supabase Auth + RLS.\n"
+                "- Brukeren ser kun sine egne rader.\n"
+                "- Nye rader lagres med brukerens `user_id`."
+            )
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        st.stop()
 
 # =========================================================
 # APP / DATA
